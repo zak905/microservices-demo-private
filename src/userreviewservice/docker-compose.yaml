@@ -1,0 +1,15 @@
+version: '3.3'
+services:
+ userreview-service:
+  build: .
+  environment:
+    REDIS_HOST: database
+    REDIS_PORT: 6379
+  ports:
+  - "8080:8080"
+  depends_on:
+  - database
+ database:
+  image: redis:5.0.3
+  ports:
+  - "6379:6379"
