@@ -6,6 +6,8 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import userreviewservice.service.DBService;
 import userreviewservice.service.UserReviewService;
 import userreviewservice.service.defaultimpl.DBServiceDefault;
@@ -36,10 +38,14 @@ public class DIModule extends AbstractBinder {
     }
 
     private static class RedisConnectionFactory implements Factory<StatefulRedisConnection> {
+        Logger logger = LoggerFactory.getLogger(RedisConnectionFactory.class);
+
         @Override
         public StatefulRedisConnection provide() {
             String host = Objects.requireNonNull(System.getenv("REDIS_HOST"));
             String port = Objects.requireNonNull(System.getenv("REDIS_PORT"));
+
+            logger.info("creating redis connection to {}:{}", host, port);
 
             String redisConnectionString = "redis://{0}:{1}";
 
