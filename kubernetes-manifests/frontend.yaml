@@ -58,14 +58,14 @@ spec:
             value: "checkoutservice:5050"
           - name: AD_SERVICE_ADDR
             value: "adservice:9555"
+          - name: REVIEW_SEVICE_ADDR
+            value: "userreviewservice:9393"
           # - name: JAEGER_SERVICE_ADDR
           #   value: "jaeger-collector:14268"
           resources:
             requests:
-              cpu: 100m
               memory: 64Mi
             limits:
-              cpu: 200m
               memory: 128Mi
 ---
 apiVersion: v1

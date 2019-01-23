@@ -1,0 +1,54 @@
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: userreviewservice
+spec:
+  template:
+    metadata:
+      labels:
+        app: userreviewservice
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: server
+        image: userreviewservice
+        ports:
+        - containerPort: 9393
+        env:
+        - name: PORT
+          value: "9393"
+        - name: REDIS_HOST
+          value: redis-cart
+        - name: REDIS_PORT
+          value: "6379"
+        resources:
+          requests:
+            memory: 180Mi
+          limits:
+            memory: 300Mi
+        readinessProbe:
+          httpGet:
+            path: /userreview/health
+            port: 9393
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /userreview/health
+            port: 9393
+          initialDelaySeconds: 30
+          periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userreviewservice
+spec:
+  type: ClusterIP
+  selector:
+    app: userreviewservice
+  ports:
+  - name: rest
+    port: 9393
+    targetPort: 9393

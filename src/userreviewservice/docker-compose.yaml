@@ -6,7 +6,7 @@ services:
     REDIS_HOST: database
     REDIS_PORT: 6379
   ports:
-  - "8080:8080"
+  - "9393:9393"
   depends_on:
   - database
  database:
