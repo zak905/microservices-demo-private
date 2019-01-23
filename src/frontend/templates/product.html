@@ -48,6 +48,11 @@
                 {{ end }}
                 
                 {{ with $.ad }}{{ template "text_ad" . }}{{ end}}
+
+                <hr/>
+                  
+                {{ template "userreviews" $.userreviews }}
+
             </div>
         </div>
     

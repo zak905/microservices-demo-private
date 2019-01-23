@@ -1,0 +1,46 @@
+{{ define "userreviews" }}
+<div class="row my-2 py-3">
+        <div class="col-sm"> 
+            <div style="margin: auto; width: 20%;">
+              Average  
+              <h1>{{.user_reviews_list.average}}</h1>
+            </div>     
+            <div style="margin: auto" id="average"></div>
+        </div>
+    <div class="col-sm" style="overflow-y: scroll; max-height: 400px;">
+            {{range $.user_reviews_list.userReviews}}
+                <div class="card">
+                        <div class="card-body">
+                        <h5 class="card-title">User 1</h5>
+                        <h6 class="card-subtitle mb-2 text-muted"><div  id="{{ .id }}"></div></h6>
+                        {{ .comment }}
+                        </div>
+                </div>
+            {{ end }}
+    </div>
+    <script>
+            window.addEventListener("load", (e) => {
+                $("#average").rateYo({
+                     rating: 3.6,
+                     readOnly: true
+                });
+
+                let userreviews = [ 
+                {{range $.user_reviews_list.userReviews}} 
+
+                {"id": "{{ .id }}", "stars" : {{ .stars }} },
+                
+                {{end}}
+                 ]
+
+                userreviews.forEach((review) => {
+                    $("#"+review.id).rateYo({
+                    rating: review.stars,
+                    starWidth: "15px",
+                    readOnly: true
+                    });
+                });
+            });
+        </script>
+    </div>
+{{ end }}

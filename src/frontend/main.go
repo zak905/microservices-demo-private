@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -78,6 +79,32 @@ type frontendServer struct {
 
 	adSvcAddr string
 	adSvcConn *grpc.ClientConn
+
+	reviewSvcAddr string
+}
+
+type UserReview struct {
+	id        string `json:"id"`
+	productId string `json:"productId"`
+	userId    string `json:"userId"`
+	username  string `json:"username"`
+	stars     uint8  `json:"stars"`
+	comment   string `json:"comment"`
+}
+
+type UserReviewList struct {
+	average     float32      `json:"average"`
+	userReviews []UserReview `json:"userReviews"`
+}
+
+var httpClient = &http.Client{
+	Transport: &http.Transport{
+		MaxIdleConnsPerHost: 1000,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	},
+	Timeout: time.Second * 20,
 }
 
 func main() {
@@ -110,6 +137,7 @@ func main() {
 	mustMapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR")
 	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
 	mustMapEnv(&svc.adSvcAddr, "AD_SERVICE_ADDR")
+	mustMapEnv(&svc.adSvcAddr, "REVIEW_SEVICE_ADDR")
 
 	mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
 	mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
@@ -131,6 +159,8 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "User-agent: *\nDisallow: /") })
 	r.HandleFunc("/_healthz", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "ok") })
+	r.HandleFunc("/userreview", svc.viewReviews).Methods(http.MethodGet)
+	r.HandleFunc("/userreview", svc.addReview).Methods(http.MethodPost)
 
 	var handler http.Handler = r
 	handler = &logHandler{log: log, next: handler} // add logging

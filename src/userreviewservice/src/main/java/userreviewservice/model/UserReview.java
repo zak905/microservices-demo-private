@@ -8,6 +8,8 @@ public class UserReview {
 
     String userId;
 
+    String username;
+
     short stars;
 
     String comment;

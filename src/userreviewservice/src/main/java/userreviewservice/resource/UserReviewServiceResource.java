@@ -4,12 +4,12 @@ package userreviewservice.resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import userreviewservice.model.UserReview;
+import userreviewservice.model.UserReviewDto;
 import userreviewservice.service.UserReviewService;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 @Path("/")
 public class UserReviewServiceResource {
@@ -21,9 +21,9 @@ public class UserReviewServiceResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<UserReview> getUserReviewList(@QueryParam("productId") String productId) {
+    public UserReviewDto getUserReviewList(@QueryParam("productId") String productId) {
         logger.info("getting user reviews for product {}", productId);
-        return userReviewService.getUserReviews(productId);
+        return new UserReviewDto(userReviewService.getUserReviews(productId));
     }
 
     @Path("/{id}")

@@ -16,8 +16,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -125,20 +127,36 @@ func (fe *frontendServer) productHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	userReviewsResponse, downloadError := http.Get(fe.reviewSvcAddr + "/userreview?productId=" + id)
+
+	if downloadError != nil || userReviewsResponse.StatusCode != 200 {
+		renderHTTPError(log, r, w, errors.Wrap(downloadError, "failed to get product user reviews"), http.StatusInternalServerError)
+		return
+	}
+
+	var userReviewList UserReviewList
+	jsonError := json.NewDecoder(userReviewsResponse.Body).Decode(&userReviewList)
+
+	if jsonError != nil {
+		renderHTTPError(log, r, w, errors.Wrap(jsonError, "error processing user reviews service response"), http.StatusInternalServerError)
+		return
+	}
+
 	product := struct {
 		Item  *pb.Product
 		Price *pb.Money
 	}{p, price}
 
 	if err := templates.ExecuteTemplate(w, "product", map[string]interface{}{
-		"session_id":      sessionID(r),
-		"request_id":      r.Context().Value(ctxKeyRequestID{}),
-		"ad":              fe.chooseAd(r.Context(), p.Categories, log),
-		"user_currency":   currentCurrency(r),
-		"currencies":      currencies,
-		"product":         product,
-		"recommendations": recommendations,
-		"cart_size":       len(cart),
+		"session_id":        sessionID(r),
+		"request_id":        r.Context().Value(ctxKeyRequestID{}),
+		"ad":                fe.chooseAd(r.Context(), p.Categories, log),
+		"user_currency":     currentCurrency(r),
+		"currencies":        currencies,
+		"product":           product,
+		"recommendations":   recommendations,
+		"cart_size":         len(cart),
+		"user_reviews_list": userReviewList,
 	}); err != nil {
 		log.Println(err)
 	}
@@ -353,6 +371,33 @@ func (fe *frontendServer) chooseAd(ctx context.Context, ctxKeys []string, log lo
 		return nil
 	}
 	return ads[rand.Intn(len(ads))]
+}
+
+func (fe *frontendServer) viewReviews(w http.ResponseWriter, r *http.Request) {
+	log := r.Context().Value(ctxKeyLog{}).(logrus.FieldLogger)
+	productID := r.URL.Query().Get("productId")
+	if productID == "" {
+		renderHTTPError(log, r, w, errors.New("invalid productID"), http.StatusBadRequest)
+		return
+	}
+	log.WithField("product", productID).Debug("getting user review from service")
+
+	res, err := httpClient.Get(fe.reviewSvcAddr + "/productId=" + productID)
+
+	responseAsBytes, readError := ioutil.ReadAll(res.Body)
+
+	if err != nil || readError != nil {
+		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve user reviews"), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseAsBytes)
+	w.WriteHeader(http.StatusOK)
+}
+
+func (fe *frontendServer) addReview(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func renderHTTPError(log logrus.FieldLogger, r *http.Request, w http.ResponseWriter, err error, code int) {
