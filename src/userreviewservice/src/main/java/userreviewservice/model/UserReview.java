@@ -1,17 +1,29 @@
 package userreviewservice.model;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
+
 public class UserReview {
 
     String id;
 
+    @NotEmpty
     String productId;
 
     String userId;
 
+    @NotEmpty
     String username;
 
+    @Min(1)
+    @Max(5)
     short stars;
 
+    @NotEmpty
+    @Size(min = 5)
     String comment;
 
     long created;
@@ -75,5 +87,13 @@ public class UserReview {
 
     public void setModified(long modified) {
         this.modified = modified;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

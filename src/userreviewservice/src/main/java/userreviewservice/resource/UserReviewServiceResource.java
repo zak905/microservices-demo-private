@@ -8,37 +8,36 @@ import userreviewservice.model.UserReviewDto;
 import userreviewservice.service.UserReviewService;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 @Path("/")
+@Produces(MediaType.APPLICATION_JSON)
 public class UserReviewServiceResource {
-
     @Inject
     UserReviewService userReviewService;
 
     Logger logger = LoggerFactory.getLogger(UserReviewServiceResource.class);
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public UserReviewDto getUserReviewList(@QueryParam("productId") String productId) {
+    public UserReviewDto getUserReviewList(@QueryParam("productId") @NotNull @Size(min = 1) String productId) {
         logger.info("getting user reviews for product {}", productId);
         return new UserReviewDto(userReviewService.getUserReviews(productId));
     }
 
     @Path("/{id}")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public UserReview get(@PathParam("id") String id) {
+    public UserReview get(@PathParam("id") @NotNull @Size(min = 1) String id) {
         logger.info("getting user review with id {}", id);
         return userReviewService.getUserReview(id);
     }
 
-
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public UserReview createUserReview(UserReview userReview) {
+    public UserReview createUserReview(@Valid UserReview userReview) {
         logger.info("creating new user review for user with id {} and product with id {}", userReview.getUserId(), userReview.getProductId());
         return userReviewService.addUserReview(userReview);
     }
