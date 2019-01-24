@@ -3,17 +3,20 @@
         <div class="col-sm"> 
             <div style="margin: auto; width: 20%;">
               Average  
-              <h1>{{.user_reviews_list.average}}</h1>
+              <h1 class="average">{{ .Average }}</h1>
             </div>     
             <div style="margin: auto" id="average"></div>
+            <button type="button" class="btn btn-primary" style="margin: 30px auto; display: block" data-toggle="modal" data-target="#newReviewModal">
+                    Add review 
+            </button>
         </div>
-    <div class="col-sm" style="overflow-y: scroll; max-height: 400px;">
-            {{range $.user_reviews_list.userReviews}}
+    <div class="col-sm reviews-container" style="overflow-y: scroll; max-height: 400px;">
+            {{range $.UserReviews }}
                 <div class="card">
                         <div class="card-body">
                         <h5 class="card-title">User 1</h5>
-                        <h6 class="card-subtitle mb-2 text-muted"><div  id="{{ .id }}"></div></h6>
-                        {{ .comment }}
+                        <h6 class="card-subtitle mb-2 text-muted"><div  id="{{ .Id }}"></div></h6>
+                        <p class="comment-text"> {{ .Comment }} </p>
                         </div>
                 </div>
             {{ end }}
@@ -21,14 +24,19 @@
     <script>
             window.addEventListener("load", (e) => {
                 $("#average").rateYo({
-                     rating: 3.6,
+                     rating: {{ .Average }},
                      readOnly: true
                 });
 
-                let userreviews = [ 
-                {{range $.user_reviews_list.userReviews}} 
+                $("#new-review-rater").rateYo({
+                                 maxValue: 5,
+                                 fullStar: true
+                });
 
-                {"id": "{{ .id }}", "stars" : {{ .stars }} },
+                let userreviews = [ 
+                {{ range $.UserReviews }} 
+
+                {"id": "{{ .Id }}", "stars" : {{ .Stars }} },
                 
                 {{end}}
                  ]
@@ -40,7 +48,89 @@
                     readOnly: true
                     });
                 });
+
+                    $("#new-review").on("submit", (e) => {
+                                e.preventDefault();
+                                console.log(e.target)
+                                let username = $("#username").val();
+                                let comment = $("#review-comment").val();
+                                let rating = $("#new-review-rater").rateYo("option", "rating");
+                                let productId = $("#product_id").val();
+                                let payload = {username: username, comment: comment, stars: rating, productId: productId};
+                                console.log(payload)
+                                $.ajax({url: "/userreview", method: "POST", data: JSON.stringify(payload), dataType: "json" })
+                                .done((response) => {
+                                   let template = $("#user-review-template").get()[0];
+
+                                    template.content.querySelector(".card-title").innerText = response.username;
+                                    template.content.querySelector(".comment-text").innerText = response.comment;
+                                    template.content.querySelector(".card-subtitle > div").id = response.id;
+
+                                    var clone = document.importNode(template.content, true);
+                                    $(".reviews-container").append(clone);
+                                    $("#"+response.id).rateYo({
+                                        rating: response.stars,
+                                        starWidth: "15px",
+                                        readOnly: true
+                                    });
+
+                                    userreviews.push(response)
+                                    let starsSum = 0
+                                    userreviews.forEach((review) => starsSum = starsSum + review.stars)
+                                    let average = (starsSum/userreviews.length).toFixed(2)
+                                    $(".average").text(average)
+                                    $("#average").rateYo("option", "rating", average);
+                                }).always((response) => {
+                                    $(".close").click()
+                                    document.getElementById("new-review").reset()
+                                }); 
+                    })   
             });
         </script>
     </div>
+    <div class="row my-2 py-3">
+            <div class="modal fade" id="newReviewModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">New User Review</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <form id="new-review">
+                                <div class="form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="username" minlength="5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="review-comment">Comment</label>
+                                    <textarea class="form-control" id="review-comment" name="comment" placeholder="Your Comments about the product" minlength="5" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                        <label for="new-review-rater">Your rating</label>
+                                        <div  id="new-review-rater">         
+                                </div>
+                         
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          <button type="submit" class="btn btn-primary">Add</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+<template id="user-review-template">
+        <div class="card">
+                <div class="card-body">
+                <h5 class="card-title">username goes here</h5>
+                <h6 class="card-subtitle mb-2 text-muted"><div  id="rater id goes here"></div></h6>
+                  <p class="comment-text"> >User review comment text goes here </p>
+                </div>
+        </div>
+    </template>
 {{ end }}

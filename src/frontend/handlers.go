@@ -127,14 +127,14 @@ func (fe *frontendServer) productHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userReviewsResponse, downloadError := http.Get(fe.reviewSvcAddr + "/userreview?productId=" + id)
+	userReviewsResponse, downloadError := http.Get("http://" + fe.reviewSvcAddr + "/userreview?productId=" + id)
 
 	if downloadError != nil || userReviewsResponse.StatusCode != 200 {
 		renderHTTPError(log, r, w, errors.Wrap(downloadError, "failed to get product user reviews"), http.StatusInternalServerError)
 		return
 	}
 
-	var userReviewList UserReviewList
+	var userReviewList UserReviewList = UserReviewList{}
 	jsonError := json.NewDecoder(userReviewsResponse.Body).Decode(&userReviewList)
 
 	if jsonError != nil {
@@ -397,7 +397,26 @@ func (fe *frontendServer) viewReviews(w http.ResponseWriter, r *http.Request) {
 }
 
 func (fe *frontendServer) addReview(w http.ResponseWriter, r *http.Request) {
+	log := r.Context().Value(ctxKeyLog{}).(logrus.FieldLogger)
 
+	response, err := httpClient.Post("http://"+fe.reviewSvcAddr+"/userreview", "application/json", r.Body)
+
+	fmt.Println("status ------- ", response.StatusCode)
+
+	responseAsBytes, readingError := ioutil.ReadAll(response.Body)
+
+	fmt.Println("body ------- ", string(responseAsBytes))
+
+	if err != nil || readingError != nil || response.StatusCode != 200 {
+		fmt.Println("error 1 ------- " + err.Error())
+		fmt.Println("error 2 ------- " + readingError.Error())
+		renderHTTPError(log, r, w, errors.Wrap(err, "could not create user review this time"), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseAsBytes)
+	w.WriteHeader(http.StatusOK)
 }
 
 func renderHTTPError(log logrus.FieldLogger, r *http.Request, w http.ResponseWriter, err error, code int) {

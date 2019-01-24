@@ -84,17 +84,17 @@ type frontendServer struct {
 }
 
 type UserReview struct {
-	id        string `json:"id"`
-	productId string `json:"productId"`
-	userId    string `json:"userId"`
-	username  string `json:"username"`
-	stars     uint8  `json:"stars"`
-	comment   string `json:"comment"`
+	Id        string `json:"id"`
+	ProductId string `json:"productId"`
+	UserId    string `json:"userId"`
+	Username  string `json:"username"`
+	Stars     uint8  `json:"stars"`
+	Comment   string `json:"comment"`
 }
 
 type UserReviewList struct {
-	average     float32      `json:"average"`
-	userReviews []UserReview `json:"userReviews"`
+	Average     float32      `json:"average"`
+	UserReviews []UserReview `json:"userReviews"`
 }
 
 var httpClient = &http.Client{
@@ -137,7 +137,7 @@ func main() {
 	mustMapEnv(&svc.checkoutSvcAddr, "CHECKOUT_SERVICE_ADDR")
 	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR")
 	mustMapEnv(&svc.adSvcAddr, "AD_SERVICE_ADDR")
-	mustMapEnv(&svc.adSvcAddr, "REVIEW_SEVICE_ADDR")
+	mustMapEnv(&svc.reviewSvcAddr, "REVIEW_SEVICE_ADDR")
 
 	mustConnGRPC(ctx, &svc.currencySvcConn, svc.currencySvcAddr)
 	mustConnGRPC(ctx, &svc.productCatalogSvcConn, svc.productCatalogSvcAddr)
@@ -159,7 +159,6 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "User-agent: *\nDisallow: /") })
 	r.HandleFunc("/_healthz", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "ok") })
-	r.HandleFunc("/userreview", svc.viewReviews).Methods(http.MethodGet)
 	r.HandleFunc("/userreview", svc.addReview).Methods(http.MethodPost)
 
 	var handler http.Handler = r

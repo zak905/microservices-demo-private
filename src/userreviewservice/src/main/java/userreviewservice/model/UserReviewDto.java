@@ -1,5 +1,6 @@
 package userreviewservice.model;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class UserReviewDto {
@@ -10,7 +11,7 @@ public class UserReviewDto {
 
     public UserReviewDto(List <UserReview> userReviews) {
         this.userReviews = userReviews;
-        this.average = userReviews.stream().mapToInt(UserReview::getStars).average().getAsDouble();
+        this.average = Double.valueOf(new DecimalFormat("0.00").format(userReviews.stream().mapToInt(UserReview::getStars).average().orElse(0)));
     }
 
     public List <UserReview> getUserReviews() {

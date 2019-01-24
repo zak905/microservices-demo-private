@@ -22,6 +22,6 @@ public class UserReviewServiceConfig extends ResourceConfig {
         register(new DIModule());
         register(BodyProcessor.class);
         logger.info("starting user review service on PORT " + System.getenv("PORT"));
-        logger.info("**********************************");
+        logger.info("**********************************************");
     }
 }

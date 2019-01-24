@@ -42,12 +42,4 @@ public class UserReviewServiceResource {
         logger.info("creating new user review for user with id {} and product with id {}", userReview.getUserId(), userReview.getProductId());
         return userReviewService.addUserReview(userReview);
     }
-
-/*    @PUT
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public UserReview editUserReview(UserReview userReview) {
-        return userReviewService.createUserReview(userReview);
-    }*/
-
 }
