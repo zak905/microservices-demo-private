@@ -401,15 +401,9 @@ func (fe *frontendServer) addReview(w http.ResponseWriter, r *http.Request) {
 
 	response, err := httpClient.Post("http://"+fe.reviewSvcAddr+"/userreview", "application/json", r.Body)
 
-	fmt.Println("status ------- ", response.StatusCode)
-
 	responseAsBytes, readingError := ioutil.ReadAll(response.Body)
 
-	fmt.Println("body ------- ", string(responseAsBytes))
-
 	if err != nil || readingError != nil || response.StatusCode != 200 {
-		fmt.Println("error 1 ------- " + err.Error())
-		fmt.Println("error 2 ------- " + readingError.Error())
 		renderHTTPError(log, r, w, errors.Wrap(err, "could not create user review this time"), http.StatusInternalServerError)
 		return
 	}
