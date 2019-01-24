@@ -1,3 +1,27 @@
+# Notes for working with the application locally
+
+- first of all, the minikube ip address needs to be added as an external ip in the [frontend-external](https://github.com/rajk95051/sampleshop/blob/master/kubernetes-manifests/frontend.yaml#L87) service
+     ```
+     minikube ip
+     ```
+
+     and note the ip, and then
+
+     ```
+     kubectl edit svc front-end-external
+     ```
+     and add this, right under the  clusterIP
+     ```
+    externalIPs:
+    - 192.168.99.100
+     ```
+     where 192.168.99.100 is the minkube ip
+
+     now it should be possible to access the front end from the browser at 192.168.99.100
+
+- it is better to remove all cpus requirements from the [kubernetes manifests](https://github.com/rajk95051/sampleshop/tree/master/kubernetes-manifests) because the resources on a personal workstation may be limited, and situations where kubernetes will not find as much resources as specified are probable. There may be times whre kubernetes will put some pods on PENDING (usually because resources are not enough), so the app may not work as expected.  
+- when launching minikube, allocate at least 6 GB of memory. e.g:  `minikube start --memory 6288`
+
 # Hipster Shop: Cloud-Native Microservices Demo Application
 
 This project contains a 10-tier microservices application. The application is a
@@ -80,7 +104,7 @@ Find **Protocol Buffers Descriptions** at the [`./pb` directory](./pb).
      here](https://docs.docker.com/docker-for-mac/kubernetes/).
    - [skaffold](https://github.com/GoogleContainerTools/skaffold/#installation)
 
-1. Launch “Docker for Desktop”. Go to Preferences:
+2. Launch “Docker for Desktop”. Go to Preferences:
    - choose “Enable Kubernetes”,
    - set CPUs to at least 3, and Memory to at least 6.0 GiB
 
