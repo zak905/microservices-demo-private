@@ -20,29 +20,27 @@ build:
   # must provide a "default repo" using one of the methods described 
   # here:
   # https://skaffold.dev/docs/concepts/#image-repository-handling
-  - image: emailservice
+  - image: quay.io/microservicesexample/emailservice
     context: src/emailservice
-  - image: productcatalogservice
+  - image: quay.io/microservicesexample/productcatalogservice
     context: src/productcatalogservice
-  - image: recommendationservice
+  - image: quay.io/microservicesexample/recommendationservice
     context: src/recommendationservice
-  - image: shippingservice
+  - image: quay.io/microservicesexample/shippingservice
     context: src/shippingservice
-  - image: checkoutservice
+  - image: quay.io/microservicesexample/checkoutservice
     context: src/checkoutservice
-  - image: paymentservice
+  - image: quay.io/microservicesexample/paymentservice
     context: src/paymentservice
-  - image: currencyservice
+  - image: quay.io/microservicesexample/currencyservice
     context: src/currencyservice
-  - image: cartservice
+  - image: quay.io/microservicesexample/cartservice
     context: src/cartservice
-  - image: frontend
+  - image: quay.io/microservicesexample/frontend
     context: src/frontend
-  - image: loadgenerator
-    context: src/loadgenerator
-  - image: adservice
+  - image: quay.io/microservicesexample/adservice
     context: src/adservice
-  - image: userreviewservice
+  - image: quay.io/microservicesexample/userreviewservice
     context: src/userreviewservice
   tagPolicy:
     gitCommit: {}
@@ -57,6 +55,8 @@ profiles:
   build:
     local:
       push: false
+- name: circle-ci
+  deploy: {}
 # "gcb" profile allows building and pushing the images
 # on Google Container Builder without requiring docker
 # installed on the developer machine. However, note that

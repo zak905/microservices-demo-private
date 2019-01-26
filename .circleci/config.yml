@@ -1,0 +1,20 @@
+version: 2 # use CircleCI 2.0
+jobs: # a collection of steps
+  build: # runs not using Workflows must have a `build` job as entry point
+
+    machine: true
+
+    steps: # a collection of executable commands
+      - checkout
+      - run: 
+          name: Install skaffold
+          command: |
+           curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/v0.20.0/skaffold-linux-amd64 
+           chmod +x skaffold 
+           sudo mv skaffold /usr/local/bin
+
+      - run: 
+          name: Build and push images
+          command: |        
+           docker login -u="microservicesexample" -p="LaynjVJxfwqDsAWoIFr6cdACCWSxZOf6qW3CeotaY+YKFT4oPcH/+IZGxVhAOuvT" quay.io
+           skaffold run -p circle-ci
