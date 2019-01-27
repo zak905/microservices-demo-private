@@ -18,4 +18,4 @@ jobs: # a collection of steps
           name: Build and push images
           command: |        
            docker login -u="microservicesexample" -p="LaynjVJxfwqDsAWoIFr6cdACCWSxZOf6qW3CeotaY+YKFT4oPcH/+IZGxVhAOuvT" quay.io
-           skaffold run -p circle-ci
+           skaffold build -p circle-ci
